@@ -1,8 +1,10 @@
 """
 The graph module
 """
+import multiprocessing
 import os
 import pickle
+import time
 from typing import Dict, List
 
 from networkx.classes import Graph
@@ -27,20 +29,39 @@ class WordsGraphs():
         """
         Load the words in to graphs
         """
+        start = time.time()
         self._add_nodes(words)
         self._add_edges()
+        print('Elapsed time: {}'.format(time.time() - start))
+
+    def _process_edges(self, i: int, storage: Dict[int, Graph]) -> None:
+        print('Process the words with length {}'.format(i))
+        graph = self.get_graph(i)
+        for node in graph.nodes():
+            for word in graph.nodes():
+                if self._compare_words(node, word):
+                    graph.add_edge(node, word)
+        storage[i] = graph
+        print('Completed the words with length {}'.format(i))
 
     def _add_edges(self) -> None:
         """
         Add edges to graphs
         """
+        jobs = []
+        manager = multiprocessing.Manager()
+        storage: Dict[int, Graph] = manager.dict()
         for i in range(self.min_length, self.max_length + 1):
-            print('Process the words with length {}'.format(i))
-            graph = self.get_graph(i)
-            for node in graph.nodes():
-                for word in graph.nodes():
-                    if self._compare_words(node, word):
-                        graph.add_edge(node, word)
+            process = multiprocessing.Process(
+                target=self._process_edges,
+                args=(i, storage),
+            )
+            jobs.append(process)
+            process.start()
+        for proc in jobs:
+            proc.join()
+        for i, graph in storage.items():
+            self.graphs[i] = graph
 
     @staticmethod
     def _compare_words(word1: str, word2: str) -> bool:
