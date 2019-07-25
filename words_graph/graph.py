@@ -94,9 +94,10 @@ class Database():
     """
     DB for the graphs
     """
-    words_path: str = './english-words/words_alpha.txt'
-    db_dir: str = 'db'
-    db_filename: str = db_dir + '/graph_{}'
+    base_dir = os.path.dirname(__file__)
+    words_path: str = os.path.join(base_dir, 'english-words/words_alpha.txt')
+    db_dir: str = os.path.join(base_dir, 'db')
+    db_filename: str = os.path.join(db_dir, 'graph_{}')
 
     def load_words_from_file(self) -> List[str]:
         """
