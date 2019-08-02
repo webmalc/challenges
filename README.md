@@ -2,6 +2,6 @@
 Solutions to various programming challenges
 
 
-### [Words graph](/challenges/words_graph/)
+### [Words graph](/challenges/tree/master/words_graph/)
 
 The script to build a graph with all the English words and the relationship between them.
